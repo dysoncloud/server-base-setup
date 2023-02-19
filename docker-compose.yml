@@ -6,32 +6,16 @@ services:
     container_name: nginx
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./volumes/nginx/sites-enabled:/etc/nginx/sites-enabled
       - ./volumes/nginx/conf.d:/etc/nginx/conf.d
-      - ./files:/var/www/html
+      - ./volumes/nginx/ssl:/etc/nginx/ssl
+      - ./files/php:/var/www/html
   
   php:
     image: php:${PHP_VERSION}-fpm-alpine
     container_name: php
     volumes:
-      - ./volumes/php/conf.d:/etc/php${PHP_VERSION_DIR}/conf.d
-      - ./files:/var/www/html
-
-  node-node1.test:
-    image: node:${NODE_VERSION}-alpine
-    container_name: node1.test
-    working_dir: /app
-    volumes:
-      - ./files/node1.test:/app
-    environment:
-      - PORT=3000 # these ports will be hardcoded and generate during app deployment
-
-  node-node2.test:
-    image: node:${NODE_VERSION}-alpine
-    container_name: node2.test
-    working_dir: /app
-    volumes:
-      - ./files/node2.test:/app
-    environment:
-      - PORT=3001
+      - ./volumes/php/conf.d:/usr/local/etc/php/conf.d
+      - ./files/php:/var/www/html
