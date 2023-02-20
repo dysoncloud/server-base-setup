@@ -7,6 +7,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    restart: unless-stopped
     volumes:
       - ./volumes/nginx/conf.d:/etc/nginx/conf.d
       - ./volumes/nginx/ssl:/etc/nginx/ssl
@@ -16,6 +17,23 @@ services:
   php:
     image: php:${PHP_VERSION}-fpm-alpine
     container_name: php
+    restart: unless-stopped
     volumes:
       - ./volumes/php/conf.d/custom.ini:/usr/local/etc/php/conf.d/custom.ini
       - ./files:/var/www/html
+
+  mysql:
+    image: mysql:${MYSQL_VERSION}
+    command: --default-authentication-plugin=mysql_native_password --max_allowed_packet=32505856
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - ./volumes/mysql/data:/var/lib/mysql
+      - ./volumes/mysql/conf.d/custom.conf:/etc/mysql/conf.d/custom.conf
+      - ./volumes/mysql/logs:/var/log/mysql
