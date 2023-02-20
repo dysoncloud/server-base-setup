@@ -8,14 +8,14 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./volumes/nginx/sites-enabled:/etc/nginx/sites-enabled
       - ./volumes/nginx/conf.d:/etc/nginx/conf.d
       - ./volumes/nginx/ssl:/etc/nginx/ssl
-      - ./files/php:/var/www/html
+      - ./volumes/nginx/logs:/var/log/nginx
+      - ./files:/var/www/html
   
   php:
     image: php:${PHP_VERSION}-fpm-alpine
     container_name: php
     volumes:
-      - ./volumes/php/conf.d:/usr/local/etc/php/conf.d
-      - ./files/php:/var/www/html
+      - ./volumes/php/conf.d/custom.ini:/usr/local/etc/php/conf.d/custom.ini
+      - ./files:/var/www/html
