@@ -2,3 +2,4 @@
 !.gitignore
 !default.conf
 !custom.conf
+!00-nginx.conf
