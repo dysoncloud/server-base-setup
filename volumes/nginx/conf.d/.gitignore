@@ -4,3 +4,5 @@
 !custom.conf
 !00-nginx.conf
 !00-ssl.conf
+!00-page-cache-base.conf
+!zz-nginx.conf
