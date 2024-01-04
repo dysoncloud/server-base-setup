@@ -18,7 +18,7 @@ do
 
     if [[ $FILETYPE =~ ^image/(png|jpeg|jpg) || $FILETYPE =~ ^"inode/x-empty" ]]; then
         if [[ $FILETYPE =~ ^"inode/x-empty" ]]; then
-            sleep 5
+            /usr/bin/sleep 5
         fi
 
         PATH="${FILE//\/uploads\//\/uploads-webp\/}"
