@@ -14,16 +14,19 @@ fi
 inotifywait -m -r -e create --format "%w%f" "$DIRECTORY" |
 while read -r FILE
 do
-    FILETYPE=$(/usr/bin/file -b --mime-type "$FILE")
+    FILETYPE=$(file -b --mime-type "$FILE")
 
     if [[ $FILETYPE =~ ^image/(png|jpeg|jpg) || $FILETYPE =~ ^"inode/x-empty" ]]; then
         if [[ $FILETYPE =~ ^"inode/x-empty" ]]; then
-            /usr/bin/sleep 5
+            sleep 5
         fi
 
-        PATH="${FILE//\/uploads\//\/uploads-webp\/}"
+        FILEPATH="${FILE//\/uploads\//\/uploads-webp\/}"
+        DIRECTORY_PATH=$(dirname "$FILEPATH")
 
-        /usr/bin/cwebp -q "$QUALITY" -metadata "$METADATA" "$FILE" -o "$PATH.webp"
+        mkdir -p $DIRECTORY_PATH
+
+        cwebp -q "$QUALITY" -metadata "$METADATA" "$FILE" -o "$FILEPATH.webp"
 
         echo "converted $FILE to WebP"
     fi
