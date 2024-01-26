@@ -1,0 +1,31 @@
+name: Push server-base-setup to server
+
+on:
+  push:
+    branches:
+      - dev
+
+
+jobs:
+  clone:
+    runs-on: ubuntu-latest
+
+    steps:
+      -  name: Pull
+         uses: appleboy/ssh-action@master
+         with:
+            host: ${{ secrets.DEV_IP }}
+            username:  ${{ secrets.DEV_USER }}
+            key:  ${{ secrets.DEV_SECRET }}
+            script: |
+                 cd ~/server-base-setup/
+                 for((i=0; i<5; i++)); do
+                   if git pull origin dev; then
+                     echo "Git pull done"
+                     exit 0
+                   else
+                    echo "Git failure ${i}"
+                    sleep 10
+                   fi
+                 done
+                 exit 1
