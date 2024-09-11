@@ -13,6 +13,13 @@ jobs:
       matrix:
         node-version: [18.x]
 
+    steps:
+      - name: Check branch
+        run: |
+            if [[ ${{ github.ref }} == 'refs/heads/main' ]]; then
+                echo "Continue..."
+            fi
+
   deploy:
     needs: [build]
     runs-on: ubuntu-latest
