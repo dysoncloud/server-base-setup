@@ -1,10 +1,10 @@
 name: server-base-setup DEV DEPLOY
 
 on:
-    push:
-      branches:
-        - main
-    workflow_dispatch:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   build:
@@ -14,11 +14,12 @@ jobs:
         node-version: [18.x]
 
     steps:
-      - name: Check branch
-        run: |
-            if [[ ${{ github.ref }} == 'refs/heads/main' ]]; then
-                echo "Continue..."
-            fi
+      - name: Checks out repository
+        uses: actions/checkout@v3
+
+      - name: Exit if not on main
+        if: ${{ github.ref != 'refs/heads/main' }}
+        run: exit 1
 
   deploy:
     needs: [build]
@@ -34,3 +35,4 @@ jobs:
           script: |
                cd ~/server-base-setup
                git pull
+          debug: true
