@@ -1,0 +1,44 @@
+name: server-base-setup LIVE DEPLOY
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - name: Check branch
+        run: |
+            if [[ ${{ github.ref }} != 'refs/heads/main' ]]; then
+                echo "Workflow can only be manually triggered on the main branch. Exiting..."
+                exit 1
+            fi
+
+  deploy:
+    needs: [build]
+    runs-on: ubuntu-latest
+
+    steps:
+     - name: SSH Deploy Node 1
+       uses: appleboy/ssh-action@master
+       with:
+          host: ${{ secrets.PROD_HOST_1 }}
+          username:  ${{ secrets.PROD_USER_1 }}
+          key:  ${{ secrets.PROD_KEY_1 }}
+          script: |
+               cd ~/server-base-setup
+               git pull
+
+     - name: SSH Deploy Node 2
+       uses: appleboy/ssh-action@master
+       with:
+          host: ${{ secrets.PROD_HOST_2 }}
+          username:  ${{ secrets.PROD_USER_2 }}
+          key:  ${{ secrets.PROD_KEY_2 }}
+          script: |
+               cd ~/server-base-setup
+               git pull
