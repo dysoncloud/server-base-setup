@@ -1,0 +1,29 @@
+name: server-base-setup DEV DEPLOY
+
+on:
+    push:
+      branches:
+        - main
+    workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+  deploy:
+    needs: [build]
+    runs-on: ubuntu-latest
+
+    steps:
+     - name: SSH Deploy Node 1
+       uses: appleboy/ssh-action@master
+       with:
+          host: ${{ secrets.DEV_HOST_1 }}
+          username:  ${{ secrets.DEV_USER_1 }}
+          key:  ${{ secrets.DEV_KEY_1 }}
+          script: |
+               cd ~/server-base-setup
+               git pull
