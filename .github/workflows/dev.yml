@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-     - name: SSH Deploy Node 1
+     - name: SSH Deploy
        uses: appleboy/ssh-action@master
        with:
           host: ${{ secrets.DEV_HOST_1 }}

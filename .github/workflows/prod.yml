@@ -11,12 +11,12 @@ jobs:
         node-version: [18.x]
 
     steps:
-      - name: Check branch
-        run: |
-            if [[ ${{ github.ref }} != 'refs/heads/main' ]]; then
-                echo "Workflow can only be manually triggered on the main branch. Exiting..."
-                exit 1
-            fi
+      - name: Checks out repository
+        uses: actions/checkout@v3
+
+      - name: Exit if not on main
+        if: ${{ github.ref != 'refs/heads/main' }}
+        run: exit 1
 
   deploy:
     needs: [build]
