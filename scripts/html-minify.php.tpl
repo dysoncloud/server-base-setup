@@ -2,6 +2,7 @@
 /*
 Plugin Name: HTML Minify
 Description: Minify HTML responses before they are sent to the browser.
+Version: 1.0
 */
 
 // Hook into WordPress to minify HTML output

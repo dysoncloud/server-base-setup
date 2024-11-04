@@ -2,6 +2,7 @@
 /*
 Plugin Name: Custom Post Update API Trigger
 Description: Triggers an API call when a post is updated.
+Version: 1.0
 */
 
 // Hook into post update
