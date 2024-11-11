@@ -1,8 +1,9 @@
 <?php
-/**
- * Plugin Name: Convert Thumbnails to WebP
- * Description: Automatically converts thumbnails of uploaded images into WebP format.
- */
+/*
+Plugin Name: Convert Thumbnails to WebP
+Description: Automatically converts thumbnails of uploaded images into WebP format.
+Version: 1.0
+*/
 
 add_action('delete_attachment', 'delete_webp_files_on_delete');
 function delete_webp_files_on_delete($attachment_id)
@@ -46,8 +47,8 @@ function delete_webp_files_on_delete($attachment_id)
 add_action('wp_generate_attachment_metadata', 'convert_thumbnails_to_webp', 10, 2);
 function convert_thumbnails_to_webp($metadata, $attachment_id)
 {
-    $quality = ${QUALITY};
-    $keep_metadata = ${METADATA};
+    $quality = CP_WEBP_QUALITY;
+    $keep_metadata = CP_WEBP_METADATA;
 
     // If the file is not an image or not JPEG/PNG, return
     if (!wp_attachment_is_image($attachment_id)) {
