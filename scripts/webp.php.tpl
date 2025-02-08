@@ -139,6 +139,12 @@ function convert_thumbnails_to_webp($metadata, $attachment_id)
             $local_file_path
         ) . '.webp';
 
+        $directory = dirname($webp_file_path);
+
+        if (!is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
         // Save the thumbnail as WebP
         $imagick_thumbnail->writeImage($webp_file_path);
 
