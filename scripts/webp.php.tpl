@@ -114,11 +114,7 @@ function convert_thumbnails_to_webp($metadata, $attachment_id)
         }
 
         // Convert to local file path
-        $local_file_path = str_replace(
-            site_url('/wp-content/uploads/'), 
-            ABSPATH . 'wp-content/' . CP_WEBP_PATH . '/', 
-            $thumbnail_file
-        );
+        $local_file_path = str_replace(site_url('/'), ABSPATH, $thumbnail_file);
 
         // Open the thumbnail file with Imagick
         $imagick_thumbnail->readImage($local_file_path);
@@ -137,8 +133,14 @@ function convert_thumbnails_to_webp($metadata, $attachment_id)
             }
         }
 
+        $webp_file_path = str_replace(
+            '/uploads/', 
+            '/' . CP_WEBP_PATH . '/', 
+            $local_file_path
+        ) . '.webp';
+
         // Save the thumbnail as WebP
-        $imagick_thumbnail->writeImage($local_file_path . '.webp');
+        $imagick_thumbnail->writeImage($webp_file_path);
 
         // Clear Imagick resources
         $imagick_thumbnail->clear();
