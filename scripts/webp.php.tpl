@@ -2,7 +2,7 @@
 /*
 Plugin Name: Convert Thumbnails to WebP
 Description: Automatically converts thumbnails of uploaded images into WebP format.
-Version: 1.0
+Version: 1.1
 */
 
 add_action('delete_attachment', 'delete_webp_files_on_delete');
@@ -36,7 +36,11 @@ function delete_webp_files_on_delete($attachment_id)
         $thumbnail_file = $attachment_file[0];
 
         // Convert to local file path
-        $local_file_path = str_replace(site_url('/'), ABSPATH, $thumbnail_file) . '.webp';
+        $local_file_path = str_replace(
+            site_url('/wp-content/uploads/'), 
+            ABSPATH . 'wp-content/' . CP_WEBP_PATH . '/', 
+            $thumbnail_file
+        ) . '.webp';
 
         if (file_exists($local_file_path)) {
             unlink($local_file_path);
@@ -110,7 +114,11 @@ function convert_thumbnails_to_webp($metadata, $attachment_id)
         }
 
         // Convert to local file path
-        $local_file_path = str_replace(site_url('/'), ABSPATH, $thumbnail_file);
+        $local_file_path = str_replace(
+            site_url('/wp-content/uploads/'), 
+            ABSPATH . 'wp-content/' . CP_WEBP_PATH . '/', 
+            $thumbnail_file
+        );
 
         // Open the thumbnail file with Imagick
         $imagick_thumbnail->readImage($local_file_path);
