@@ -89,7 +89,7 @@ function preload_lcp($buffer) {
         $preload_tag = '<link rel="preload" as="image" href="' . $matched_url . '" fetchpriority="high" />';
 
         // Step 4: Inject into <head>
-        $buffer = preg_replace('/<\/head>/', $preload_tag . "\n</head>", $buffer, 1);
+        $buffer = preg_replace('/<\/title>/', "</title>\n" . $preload_tag, $buffer, 1);
     }
 
     // Output final buffer
