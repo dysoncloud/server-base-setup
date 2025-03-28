@@ -49,42 +49,32 @@ function delete_webp_files_on_delete($attachment_id)
 }
 
 add_action('wp_generate_attachment_metadata', 'convert_thumbnails_to_webp', 10, 2);
-function convert_thumbnails_to_webp($metadata, $attachment_id)
-{
+function convert_thumbnails_to_webp($metadata, $attachment_id) {
     $quality = CP_WEBP_QUALITY;
     $keep_metadata = CP_WEBP_METADATA;
 
-    // If the file is not an image or not JPEG/PNG, return
+    // If the file is not an image, return
     if (!wp_attachment_is_image($attachment_id)) {
-        return;
+        return $metadata;
     }
 
     $file = get_attached_file($attachment_id);
-
-    // Get the file extension
-    $extension = pathinfo($file, PATHINFO_EXTENSION);
+    $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 
     // Check if the file is JPEG or PNG
-    if (!in_array(strtolower($extension), ['jpg', 'jpeg', 'png'])) {
-        return;
+    if (!in_array($extension, ['jpg', 'jpeg', 'png'])) {
+        return $metadata;
     }
 
     // Ensure that the file is within the uploads directory
     $uploads_dir = wp_get_upload_dir()['basedir'];
     if (strpos($file, $uploads_dir) !== 0) {
-        return;
+        return $metadata;
     }
-
-    // Check if Imagick extension is available
-    if (!extension_loaded('imagick')) {
-        return;
-    }
-
-    // Create Imagick object
-    $imagick_thumbnail = new Imagick();
 
     // Get thumbnail sizes
-    $thumbnail_sizes = array_merge(array('full'), get_intermediate_image_sizes());
+    $thumbnail_sizes = array_merge(['full'], get_intermediate_image_sizes());
+    $image = null;
 
     // Loop through each thumbnail size and convert it to WebP
     foreach ($thumbnail_sizes as $size) {
@@ -93,67 +83,68 @@ function convert_thumbnails_to_webp($metadata, $attachment_id)
 
         // Check if the thumbnail file exists with exponential backoff
         $retry_count = 0;
-        $max_retries = 3; // Maximum number of retries
+        $max_retries = 3;
         while (!$attachment_file && $retry_count < $max_retries) {
-            $delay = pow(2, $retry_count); // Exponential backoff with power of 2
-            sleep($delay); // Wait for the calculated delay before retrying
+            sleep(pow(2, $retry_count));
             $attachment_file = wp_get_attachment_image_src($attachment_id, $size);
             $retry_count++;
         }
 
         if (!$attachment_file) {
-            continue; // Skip if thumbnail file doesn't exist after retries
+            continue;
         }
 
         $thumbnail_file = $attachment_file[0];
-
-        // Check if the file is JPEG or PNG
-        $thumbnail_extension = pathinfo($thumbnail_file, PATHINFO_EXTENSION);
-        if (!in_array(strtolower($thumbnail_extension), ['jpg', 'jpeg', 'png'])) {
+        $thumbnail_extension = strtolower(pathinfo($thumbnail_file, PATHINFO_EXTENSION));
+        if (!in_array($thumbnail_extension, ['jpg', 'jpeg', 'png'])) {
             continue;
         }
 
         // Convert to local file path
         $local_file_path = str_replace(site_url('/'), ABSPATH, $thumbnail_file);
 
-        // Open the thumbnail file with Imagick
-        $imagick_thumbnail->readImage($local_file_path);
-
-        // Set format to WebP
-        $imagick_thumbnail->setImageFormat('webp');
-        $imagick_thumbnail->setImageCompressionQuality($quality);
-
-        // Strip metadata retaining color profile
-        if (!$keep_metadata) {
-            $profiles = $imagick_thumbnail->getImageProfiles("icc", true);
-            $imagick_thumbnail->stripImage();
-
-            if (!empty($profiles)) {
-                $imagick_thumbnail->profileImage("icc", $profiles['icc']);
-            }
+        if (!file_exists($local_file_path)) {
+            continue;
         }
 
-        $webp_file_path = str_replace(
-            '/uploads/', 
-            '/' . CP_WEBP_PATH . '/', 
-            $local_file_path
-        ) . '.webp';
+        // Open the file
+        if ($thumbnail_extension === 'jpg' || $thumbnail_extension === 'jpeg') {
+            $image = @imagecreatefromjpeg($local_file_path);
+        } elseif ($thumbnail_extension === 'png') {
+            $image = @imagecreatefrompng($local_file_path);
+            if ($image) {
+                imagepalettetotruecolor($image); 
+                imagealphablending($image, false);
+                imagesavealpha($image, true);
+            }
+        } else {
+            continue;
+        }
 
+        if (!$image) {
+            continue;
+        }
+
+        $webp_file_path = str_replace('/uploads/', '/' . CP_WEBP_PATH . '/', $local_file_path) . '.webp';
         $directory = dirname($webp_file_path);
 
         if (!is_dir($directory)) {
-            mkdir($directory, 0755, true);
+            if (!mkdir($directory, 0755, true)) {
+                error_log("CP_WEBP: failed to create directory: $directory");
+                imagedestroy($image);
+                continue;
+            }
         }
 
         // Save the thumbnail as WebP
-        $imagick_thumbnail->writeImage($webp_file_path);
+        if (!imagewebp($image, $webp_file_path, $quality)) {
+            error_log("CP_WEBP: failed to convert image to WebP: $local_file_path");
+        }
 
-        // Clear Imagick resources
-        $imagick_thumbnail->clear();
+        // Clear resources
+        imagedestroy($image);
+        $image = null;
     }
-
-    // Destroy Imagick resources
-    $imagick_thumbnail->destroy();
 
     return $metadata;
 }
